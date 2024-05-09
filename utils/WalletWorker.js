@@ -47,7 +47,10 @@ class WalletWorker {
         console.log("Address: " + newWallet1.createAddresses()[0]['address']);
 
         console.log("All Addresses: ");
-        console.log(Object.keys(newWallet1.getAddresses())[0]);
+        console.log(Object.keys(newWallet1.getAllAddresses())[0]);
+
+        console.log("Balance: ")
+        console.log(newWallet1.getBalance());
     }
 }
 

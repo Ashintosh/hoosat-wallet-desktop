@@ -10,9 +10,9 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@kaspa/core-lib": "file:utils/htn-core-lib",
+    "@kaspa/core-lib": "file:libs/htn-core-lib",
     "@kaspa/grpc-node": "^1.0.8",
-    "@kaspa/wallet": "file:utils/htn-wallet/dist",
+    "@kaspa/wallet": "file:libs/htn-wallet/dist",
     "core-js": "^3.8.3",
     "fs": "^0.0.1-security",
     "path": "^0.12.7",
