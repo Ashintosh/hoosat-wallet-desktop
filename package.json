@@ -7,7 +7,10 @@
     "start": "vue-cli-service build && electron .",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "build-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=build-mac",
+    "build-win": "electron-packager . hoosat-wallet-desktop --overwrite --asar --platform=win32 --arch=ia32 --prune=true --out=build-win --version-string.CompanyName=Ashintosh --version-string.FileDescription=Wallet --version-string.ProductName=\\\"Hoosat Desktop Wallet\\\"",
+    "build-linux": "electron-packager . hoosat-wallet-desktop --overwrite --asar --platform=linux --arch=x64 --prune=true --out=bin"
   },
   "dependencies": {
     "@kaspa/core-lib": "file:libs/htn-core-lib",

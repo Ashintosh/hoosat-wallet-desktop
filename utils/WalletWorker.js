@@ -1,14 +1,17 @@
-const { Wallet, initKaspaFramework } = require('@kaspa/wallet');
+const { Wallet, initKaspaFramework, TxSend } = require('@kaspa/wallet');
 const { RPC } = require('@kaspa/grpc-node');
-const { writeFile, readFile } = require('node:fs');
 const path = require('path');
 const zlib = require('zlib');
 const crypto = require('./Crypto');
+const filestream = require('./FileStream');
 
 class WalletWorker {
     #DEFAULT_NETWORK = 'hoosat';
     #DEFAULT_HOST    = '127.0.0.1';
-    #DEFAULT_PORT    = '16110'; // 16111 testnet
+    #DEFAULT_PORT    = '42420'; // 16111 testnet
+    #DEFAULT_ENC_KEY = 'hoosat-wallet_9KjLx';
+
+
 
     createWallet(mnemonic= null, { network = this.#DEFAULT_NETWORK, host = this.#DEFAULT_HOST, port = this.#DEFAULT_PORT } = {}) {
         const rpc = new RPC({ clientConfig: { host: `${host}:${port}` } });
@@ -28,25 +31,22 @@ class WalletWorker {
         return wallet.addressManager.getAddresses(amount, type);
     }
 
-    // TODO: Finish file import
-    importFromFile(filepath, password= null) {
-        let fileData;
-        readFile(filepath, 'binary', function(err, data) {
-            console.log('+++++++++++++++++')
-           if (err) {
-               console.error("Read Error:", err);
-               return;
-           }
-           fileData = data;
-        });
+    async importFromFile(filepath, password= this.#DEFAULT_ENC_KEY) {
 
-        console.log(fileData);
+        let fileData = await filestream.readFileBytes(filepath)
+            .catch((err) => {
+                console.error(err);
+                return undefined;
+            });
 
-        fileData = (password) ? crypto.decryptBytes(fileData, password) : Buffer.from(fileData);
+        if (!fileData) {
+            console.error('Empty file buffer');
+            return undefined;
+        }
 
-        const decompressedData = JSON.stringify(zlib.gunzipSync(fileData));
+        fileData = crypto.decryptBytes(fileData, password).toString('utf8');
+        const walletData = JSON.parse(fileData);
 
-        const walletData = JSON.parse(decompressedData);
         this.network =  walletData['network'];
 
         const rpc = new RPC({ clientConfig: { host: `${this.network['host']}:${this.network['port']}` } });
@@ -57,14 +57,16 @@ class WalletWorker {
         return this;
     }
 
-    saveToFile(filename, filepath, password= null) {
+    async saveToFile(filename, filepath, password= this.#DEFAULT_ENC_KEY) {
+        const wallet = this.wallet;
+        const network = this.network;
         const receiveAddresses = this.generateAddressData();
         const changeAddresses = this.generateAddressData(true);
 
         let walletData = {
             name: filename,
-            mnemonic: this.wallet.mnemonic,
-            network: this.network,
+            mnemonic: wallet.mnemonic,
+            network: network,
             addresses: {
                 receive: receiveAddresses,
                 change: changeAddresses
@@ -72,34 +74,28 @@ class WalletWorker {
             transactions: { }
         };
 
-        zlib.gzip(JSON.stringify(walletData), (err, compressedData) => {
-            if (err) {
-                console.error('Compression Error:', err);
-                return;
-            }
-            walletData = compressedData;
-        });
-
-        let walletBuffer = (password) ? crypto.encryptBytes(Buffer.from(JSON.stringify(walletData)), password)
-            : JSON.stringify(walletData, false, 4);
-
+        let walletBuffer = crypto.encryptBytes(Buffer.from(JSON.stringify(walletData)), password);
         const absolutePath = path.join(filepath.endsWith('/') ? filepath : filepath + '/', filename + '.hoosat');
-        writeFile(absolutePath, walletBuffer, err => {
-            if (err) {
-                console.error('Write Error:', err);
-                return false;
-            }
-        });
+
+        await filestream.writeFileBytes(absolutePath, walletBuffer)
+            .catch((err) => {
+                console.error(err);
+                return undefined;
+            });
 
         return filepath;
     }
 
     generateAddressData(change= false) {
-        const addressData = (change) ? this.wallet.addressManager.changeAddress.keypairs
-            : this.wallet.addressManager.receiveAddress.keypairs;
+        const wallet = this.wallet;
+        const addressData = (change) ? wallet.addressManager.changeAddress.keypairs
+            : wallet.addressManager.receiveAddress.keypairs;
 
-        const addressIndexes = (change) ? this.wallet.addressManager.changeAddress.atIndex
-            : this.wallet.addressManager.receiveAddress.atIndex
+        const addressIndexes = (change) ? wallet.addressManager.changeAddress.atIndex
+            : wallet.addressManager.receiveAddress.atIndex
+
+        console.log('=======================================================')
+        console.log(wallet.addressManager.receiveAddress.atIndex);
 
         let receiveData = {};
         for (let index= 0; index < Object.keys(addressIndexes).length; index++) {
@@ -112,31 +108,41 @@ class WalletWorker {
         return receiveData;
     }
 
+    async refresh() {
+        const wallet = this.wallet;
+        await wallet.sync()
+            .catch((Err) => {
+                console.error("Refresh Error:", Err);
+                return false;
+            });
+        return true;
+    }
+
     async wTest() {
 
-        const newWallet1 = new WalletWorker().createWallet();
-        //const newWalletRestore = new WalletWorker().createWallet(newWallet1.wallet.mnemonic);
         //newWallet1.wallet.setLogLevel('verbose');
 
-        newWallet1.getAddresses('receive', 3);
-        newWallet1.getAddresses('change', 3);
+        const newWallet = await new WalletWorker()
+            .importFromFile('/home/ash/Downloads/loaded-wallet.hoosat');
 
 
-        console.log(newWallet1.wallet.addressManager.all)
-        console.log('=============================================================')
 
-        newWallet1.saveToFile('wallet', '/home/ash/Downloads/')
+        await newWallet.refresh();
 
-        //newWalletRestore.getAddresses('receive', 3);
-        //newWalletRestore.getAddresses('change', 3);
+        console.log(newWallet.wallet.balance);
 
-        const newWallet2 = new WalletWorker().importFromFile('/home/ash/Downloads/wallet.hoosat');
-        newWallet2.getAddresses('receive', 3);
-        newWallet2.getAddresses('change', 3);
-
-        console.log(newWallet2.wallet.addressManager.all)
+        console.log(newWallet.wallet.addressManager.receiveAddress.atIndex[1]);
 
 
+        console.log(newWallet.wallet.balance.available)
+
+        console.log("Balance: " + this.atomicToFloat(newWallet.wallet.balance.available) + " HTN");
+
+        //console.log(await newWallet.wallet.composeTxAndNetworkFeeInfo(txData))
+    }
+
+    atomicToFloat(atomic) {
+        return (atomic / 100000000).toFixed(8);
     }
 }
 
@@ -145,3 +151,5 @@ class WalletWorker {
     const worker = new WalletWorker();
     await worker.wTest();
 })();
+
+module.exports = WalletWorker;
