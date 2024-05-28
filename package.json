@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "main": "electron.js",
+  "type": "commonjs",
   "scripts": {
     "start": "vue-cli-service build && electron .",
     "serve": "vue-cli-service serve",
@@ -14,8 +15,11 @@
   },
   "dependencies": {
     "@kaspa/core-lib": "file:libs/htn-core-lib",
+    "@kaspa/grpc": "^1.4.0",
     "@kaspa/grpc-node": "^1.0.8",
     "@kaspa/wallet": "file:libs/htn-wallet/dist",
+    "@kaspa/wallet-worker": "file:libs/htn-wallet-worker",
+    "axios": "^1.7.2",
     "core-js": "^3.8.3",
     "fs": "^0.0.1-security",
     "path": "^0.12.7",

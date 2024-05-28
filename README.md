@@ -1,14 +1,27 @@
 # hoosat-wallet-desktop
 
+#### Donations: `hoosat:qr9levtfffqlhgrzv8y57y6dddjnvqnynvhkgv5waumlz6k53g925avlqf73n`
+
 ## Project setup
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### Starts wallet
 ```
-npm run serve
+npm start
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### Compilation
+Windows:
+```
+npm run build-win
+```
+Linux:
+```
+npm run build-linux
+```
+macOS:
+```
+npm run build-mac
+```
