@@ -23,23 +23,19 @@ class Worker {
         return this;
     }
 
-    getAddresses(amount= 1, change= false) {
+    createAddress(amount= 1, type= 'receive') {
         if (!this.wallet) throw Error("Wallet not loaded into object.");
         const wallet = this.wallet;
-        const type = (change) ? 'change' : 'receive';
-
         return wallet.addressManager.getAddresses(amount, type);
     }
 
-
-
-    generateAddressData(change= false) {
+    getAddressData(type= 'receive') {
         if (!this.wallet) throw Error("Wallet not loaded into object.");
         const wallet = this.wallet;
-        const addressData = (change) ? wallet.addressManager.changeAddress.keypairs
+        const addressData = (type === 'receive') ? wallet.addressManager.changeAddress.keypairs
             : wallet.addressManager.receiveAddress.keypairs;
 
-        const addressIndexes = (change) ? wallet.addressManager.changeAddress.atIndex
+        const addressIndexes = (type === 'change') ? wallet.addressManager.changeAddress.atIndex
             : wallet.addressManager.receiveAddress.atIndex
 
         let receiveData = {};
@@ -53,6 +49,12 @@ class Worker {
         return receiveData;
     }
 
+    async sendTransaction(tx) {
+        if (!this.wallet) throw Error("Wallet not loaded into object.");
+        const wallet = this.wallet;
+        await wallet.submitTransaction(tx);
+    }
+
     async refresh() {
         if (!this.wallet) throw Error("Wallet not loaded into object.");
         const wallet = this.wallet;
@@ -62,6 +64,12 @@ class Worker {
                 return false;
             });
         return true;
+    }
+
+    buildTransaction(txData) {
+        if (!this.wallet) throw Error("Wallet not loaded into object.");
+        const wallet = this.wallet;
+        return wallet.composeTx(txData);
     }
 
     estimateTransaction(txData) {
@@ -82,6 +90,12 @@ class Worker {
     }
 
     async wTest() {
+        const test2Wallet = new Worker().createWallet();
+        const taddress = test2Wallet.createAddress();
+        await test2Wallet.refresh()
+        console.log(test2Wallet.wallet.balance);
+        const address= taddress[0].address;
+
         const testWallet = new Worker().createWallet('')
 
         console.log("Refresh")
@@ -92,6 +106,33 @@ class Worker {
 
         console.log('Generate Addresses:')
         console.log(testWallet.wallet.addressManager.getAddresses(20, "receive"))
+
+        const txData = {
+            toAddr: address,
+            amount: 10000000000
+        }
+
+        console.log('Fee:')
+        txData.fee = testWallet.estimateTransaction(txData).fee;
+        console.log(txData.fee)
+
+        console.log("trans:")
+        const tx = testWallet.buildTransaction(txData)
+        console.log(tx)
+
+
+        console.log(testWallet.sendTransaction(tx))
+
+        let stop = false;
+
+        while (!stop) {
+            await test2Wallet.refresh()
+            console.log(test2Wallet.wallet.balance);
+
+            if (test2Wallet.wallet.balance > 0) {
+                stop = true;
+            }
+        }
     }
 }
 

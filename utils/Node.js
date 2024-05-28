@@ -24,7 +24,7 @@ class Node {
             try {
                 client.verbose = true;
 
-                let response = await client.call('getTransaction', {address:'hoosattest:qrmlxs6dqxa393z2j5kj6r8st6dsakyfy34vhxewgnaq35lea5gr7sxkajqzc'});
+                let response = await client.call('submitTransactionRequest', {address:'hoosattest:qrmlxs6dqxa393z2j5kj6r8st6dsakyfy34vhxewgnaq35lea5gr7sxkajqzc'});
                 console.log(response);
             } catch (Err) {
                 console.error("Error:", Err);
