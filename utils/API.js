@@ -62,7 +62,17 @@ class API {
         const route = `${this.API_BASE}/addresses/${address}/utxos`;
         const utxoData = await this.call(route);
 
-        console.log(utxoData)
+        let utxos = [ ];
+
+        for (const utxo of utxoData) {
+            utxos.push({
+                id: utxo.outpoint.transactionId,
+                address: utxo.address,
+                amount: utxo.utxoEntry.amount,
+            });
+        }
+
+        return utxos;
     }
 
     async call(route, params) {

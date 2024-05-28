@@ -92,8 +92,6 @@ class Worker {
 
         console.log('Generate Addresses:')
         console.log(testWallet.wallet.addressManager.getAddresses(20, "receive"))
-
-
     }
 }
 
