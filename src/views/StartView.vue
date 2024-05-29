@@ -38,75 +38,66 @@ export default {
 
 
 <style>
-.body {
+.content {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   color: #ffffff;
-  /*background: linear-gradient(to bottom right, #00363e, #028b54) no-repeat;*/
   background: #272727;
   height: 100vh;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr 1fr;
-  gap: 0 0;
-  justify-content: center;
-}
-
-.logo {
-  font-family: PoetsenOne-Regular, serif;
-  grid-column: 2;
-  grid-row: 2;
-  justify-self: center;
-  /* border: 1px solid white; Remove in prod */
-
-}
-.logo img {
-  width: 160px;
-  height: 160px;
-  -webkit-user-drag: none;
-}
-
-.start-buttons {
-  grid-column: 2;
-  grid-row: 3;
-  justify-self: center;
-  display: grid;
-  grid-template-columns: repeat(2, auto);
-  gap: 0;
-  padding-top: 50px;
-  text-align: center;
-  /* border: 1px solid white; Remove in prod */
-
-}
-.button-col {
-  display: table-cell;
-  text-align: center;
-  padding-left: 3px;
-  padding-right: 3px;
-  /* border: 1px solid white; Remove in prod */
+  font-family: WorkSans-Regular, serif;
 }
 
 button {
   background: transparent;
   border-radius: 42px;
-  border: 1px solid #1ab08e;
   display: inline-block;
   cursor: pointer;
-  color: #ffffff;
   font-family: WorkSans-Regular, serif;
   font-size: 17px;
   font-weight: bold;
   padding: 10px 41px;
   text-decoration: none;
-  text-shadow: 0 1px 7px #2f6627;
   transition: all .1s ease-in;
   margin: 0 8px;
   width: 208px;
 }
-button:hover {
-  background-color: #04a061;
-}
 button:active {
   position: relative;
   top: 1px;
+}
+.primary-btn {
+  border: 1px solid #1ab08e;
+  text-shadow: 0 1px 7px #2f6627;
+  color: #ffffff;
+}
+.primary-btn:hover {
+  background-color: #04a061;
+}
+.secondary-btn {
+  border: 1px solid #79938f;
+  text-shadow: 0 1px 7px #2f6627;
+  color: #ffffff;
+}
+.secondary-btn:hover {
+  background-color: #6e8582;
+}
+
+input {
+
+}
+
+/* Transitions */
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 /* Fonts */

@@ -1,29 +1,68 @@
 <template>
-  <div class="body">
-    <div class="logo">
-      <img src="@/assets/images/logo.png" alt="Hoosat Logo">
-    </div>
-    <div class="start-buttons">
-      <div class="button-col">
-        <button @click="switchComponent('CreateWallet')">Create Wallet</button>
+  <div class="content">
+    <transition name="slide">
+      <div class="logo" v-if="show">
+        <img src="@/assets/images/logo.png" alt="Hoosat Logo">
       </div>
-      <div class="button-col">
-        <button @click="switchComponent('RestoreWallet')">Restore Wallet</button>
+    </transition>
+    <transition name="fade">
+      <div class="fields" v-if="show">
+        <button class="primary-btn" @click="switchComponent('CreateWallet')">Create Wallet</button>
+        <button class="secondary-btn" @click="switchComponent('RestoreWallet')">Restore Wallet</button>
       </div>
-    </div>
+    </transition>
   </div>
 </template>
 
-<script lang="js">
+<script>
 export default {
   name: 'StartWallet',
+  data() {
+    return {
+      show: false
+    };
+  },
+  mounted() {
+    this.show = true;
+  },
   methods: {
-    // Logic to switch to another component
-    // For example, switch to a different component named 'CreateWallet'
     switchComponent(component) {
-      console.log('Emit');
-      this.$emit('childSwitch', component);
+      this.show = false;
+      setTimeout(() => {
+        this.$emit('childSwitch', component);
+      }, 500);
     }
   }
 }
 </script>
+
+<style scoped>
+.logo {
+  position: absolute;
+  top: 130px;
+  left: 381px;
+}
+.logo img {
+  max-width: 140px;
+  max-height: 140px;
+  -webkit-user-drag: none;
+}
+
+.fields {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-self: center;
+  margin-top: 50px;
+  gap: 20px;
+}
+
+.slide-leave-active {
+  transition: transform 0.5s ease;
+}
+
+.slide-leave-to {
+  transform: translateY(-80px);
+}
+
+</style>
