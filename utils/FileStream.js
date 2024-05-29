@@ -33,7 +33,6 @@ class FileStream {
             fs.access(filePath, fs.constants.F_OK, (accessErr) => {
                 if (accessErr && accessErr.code !== 'ENOENT') {
                     reject(accessErr);
-                    return undefined;
                 }
 
                 const parentDir = path.dirname(filePath);
@@ -44,7 +43,6 @@ class FileStream {
                 fs.writeFile(filePath, '', (writeErr) => {
                    if (writeErr) {
                        reject(writeErr);
-                       return undefined;
                    }
 
                    const writeStream = fs.createWriteStream(filePath);

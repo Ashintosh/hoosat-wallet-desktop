@@ -1,14 +1,7 @@
 const axios = require('axios')
 
 class API {
-
     API_BASE = 'https://api.network.hoosat.fi';
-
-    constructor(host= '127.0.0.1', port= '42422', network= 'hoosat') {
-        this.host    = host;
-        this.port    = port;
-        this.network = network;
-    }
 
     async getTransactionsByAddress(address) {
         const route = `${this.API_BASE}/addresses/${address}/full-transactions`;
@@ -94,15 +87,6 @@ class API {
             throw Err;
         }
     }
-
-    async rTest() {
-        console.log(await this.getUtxosByAddress('hoosat:qrhed37kge64z6agkq82l7xce423ugdf308ehtsh72y2nee7x2kvzxv6xqwd4'))
-    }
 }
-
-(async () => {
-    const api = new API();
-    await api.rTest();
-})();
 
 module.exports = API;

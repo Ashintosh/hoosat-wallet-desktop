@@ -34,7 +34,6 @@ function createWindow() {
     });
 }
 
-//console.log(app);
 app.enableSandbox();
 
 app.on('window-all-closed', function () {
@@ -49,11 +48,35 @@ app.on('ready', function () {
     });
 });
 
+// IPC backend requests TODO: Move these to their own class
+
 ipcMain.on('WINDOW_STATE', (event, payload) => {
     const remote = require('electron');
     switch (payload) {
         case 'minimized': remote.BrowserWindow.getFocusedWindow().minimize(); break;
         case 'maximized': remote.BrowserWindow.getFocusedWindow().maximize(); break;
-        case 'closed': remote.BrowserWindow.getFocusedWindow().close();       break;
+        case 'closed'   : remote.BrowserWindow.getFocusedWindow().close();    break;
     }
+});
+
+ipcMain.on('OPEN_DIRECTORY_DIALOG', (event) => {
+    const { dialog } = require('electron');
+    dialog.showOpenDialog({ properties: ['openDirectory'] })
+        .then(result => {
+            if (!result.canceled) {
+                event.reply('DIRECTORY_SELECTED', result.filePaths[0]);
+            }
+        })
+        .catch(err => {
+            console.log(err);
+        });
+});
+
+ipcMain.on('CREATE_WALLET', async (event, data) => {
+    const Wallet = require('./utils/Wallet');
+
+    const wallet = await new Wallet().create();
+    let createdResult = await wallet.saveToFile(data.directory, data.password);
+
+    event.reply('WALLET_CREATED', createdResult);
 });

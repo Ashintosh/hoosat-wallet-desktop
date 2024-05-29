@@ -13,7 +13,7 @@ class Wallet {
     }
 
     async create(seed= null) {
-        this.wallet = this.worker.createWallet(seed);
+        this.wallet = await this.worker.createWallet(seed);
         return this;
     }
 
@@ -24,13 +24,17 @@ class Wallet {
             priorityFee: priorityFee
         };
 
-        const estimatedFee = this.worker.estimateTransactionFee(txData);
+        const estimatedFee = await this.worker.estimateTransactionFee(txData);
 
         delete txData.priorityFee;
         txData.fee = estimatedFee;
 
-        const tx = this.worker.buildTransaction(txData);
+        const tx = await this.worker.buildTransaction(txData);
         return this.api.sendTransaction(tx);
+    }
+
+    async createAddress(amount= 1, type= 'receive') {
+        return this.wallet.createAddress(amount, type);
     }
 
     async importFromFile(filepath, password= this.#DEFAULT_ENC_KEY) {
@@ -53,57 +57,65 @@ class Wallet {
         return this.create(walletData['mnemonic']);
     }
 
-    async saveToFile(filename, filepath, password= this.#DEFAULT_ENC_KEY) {
-        if (!this.wallet) throw Error("Wallet not loaded into object.");
-        const wallet = this.wallet;
-        const receiveAddresses = wallet.generateAddressData();
-        const changeAddresses = wallet.generateAddressData(true);
+    async saveToFile(filepath, password= this.#DEFAULT_ENC_KEY) {
+        if (!this.wallet) { throw new Error("Wallet not loaded into object."); }
 
-        let walletData = {
-            name: filename,
+        const walletData = await this.prepareWalletData(this.wallet, password);
+
+        let absolutePath = filepath;
+        if (!filepath.endsWith(".hoosat")) {
+            absolutePath = path.join(filepath.endsWith('/') ? filepath : filepath + '/', 'wallet.hoosat');
+        }
+
+        try {
+            await filestream.writeFileBytes(absolutePath, walletData);
+            return true;
+        } catch (Err) {  return false; }
+    }
+
+    async prepareWalletData(wallet, password) {
+        wallet.createAddress(5, 'receive');
+        wallet.createAddress(2, 'change');
+
+        const receiveAddresses = await wallet.getAddressData('receive');
+        const changeAddresses = await wallet.getAddressData('change');
+        const transactions = await this.prepareTransactionData(wallet, receiveAddresses, changeAddresses);
+
+        const walletData = {
             mnemonic: wallet.mnemonic,
             network: wallet.network,
             addresses: {
                 receive: receiveAddresses,
                 change: changeAddresses
             },
-            transactions: { }
+            transactions: transactions
         };
 
-        let walletBuffer = crypto.encryptBytes(Buffer.from(JSON.stringify(walletData)), password);
-        const absolutePath = path.join(filepath.endsWith('/') ? filepath : filepath + '/', filename + '.hoosat');
+        return crypto.encryptBytes(Buffer.from(JSON.stringify(walletData)), password);
+    }
 
-        await filestream.writeFileBytes(absolutePath, walletBuffer)
-            .catch((err) => {
-                console.error(err);
-                return undefined;
-            });
+    async prepareTransactionData(wallet, receiveAddresses, changeAddresses) {
+        const transactions = {
+            receiveAddresses: {},
+            changeAddresses: {}
+        };
 
-        return filepath;
+        await Promise.all(receiveAddresses.map(async (addressData) => {
+            const address = addressData.address;
+            transactions.receiveAddresses[address] = await this.api.getTransactionsByAddress(address);
+        }));
+
+        await Promise.all(changeAddresses.map(async (addressData) => {
+            const address = addressData.address;
+            transactions.changeAddresses[address] = await this.api.getTransactionsByAddress(address);
+        }));
+
+        return transactions;
     }
 
     atomicToFloat(atomic) {
         return (atomic / 100000000).toFixed(8);
     }
-
-    async rTest() {
-        const wallet = new Wallet().create('fame leaf frequent piano mystery shrimp same ahead acoustic oyster crater salute');
-
-        const test2Wallet = new Worker().createWallet();
-        const taddress = test2Wallet.createAddress();
-        await test2Wallet.refresh()
-        const address = taddress[0].address;
-
-        const send = wallet.send(10000000000, address);
-
-        console.log(send);
-    }
 }
-
-
-(async () => {
-    const wallet = new Wallet();
-    await wallet.rTest();
-})();
 
 module.exports = Wallet;

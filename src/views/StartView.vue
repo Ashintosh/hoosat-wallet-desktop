@@ -51,7 +51,6 @@ export default {
 
 button {
   background: transparent;
-  border-radius: 42px;
   display: inline-block;
   cursor: pointer;
   font-family: WorkSans-Regular, serif;
@@ -71,6 +70,7 @@ button:active {
   border: 1px solid #1ab08e;
   text-shadow: 0 1px 7px #2f6627;
   color: #ffffff;
+  border-radius: 42px;
 }
 .primary-btn:hover {
   background-color: #04a061;
@@ -79,13 +79,62 @@ button:active {
   border: 1px solid #79938f;
   text-shadow: 0 1px 7px #2f6627;
   color: #ffffff;
+  border-radius: 42px;
 }
 .secondary-btn:hover {
   background-color: #6e8582;
 }
+.browse-btn {
+  border: 1px solid #1ab08e;
+  text-shadow: 0 1px 7px #2f6627;
+  color: #ffffff;
+  border-radius: 5px;
+}
+.browse-btn:hover {
+  background-color: #6e8582;
+}
 
-input {
+.primary-input {
+  font-size: 18px;
+  padding: 5px 10px;
+  width: 100%;
+  outline: none;
+  background: #6E8582;
+  color: #1cc59e;
+  border: 1px solid #1AB08E;
+  border-radius: 5px;
+  transition: .3s ease;
+}
+.primary-input:focus {
+  background: #B9DFDA;
+  border: 1px solid #22E4B8;
+  border-radius: 10px;
+  color: #149578;
+}
 
+.readonly-input {
+  font-size: 18px;
+  padding: 5px 10px;
+  width: 100%;
+  outline: none;
+  background: #6E8582;
+  color: #1cc59e;
+  border: 1px solid #1AB08E;
+  border-radius: 5px;
+  transition: .3s ease;
+}
+
+.svg_icon {
+  position: absolute;
+  bottom: 159px;
+  right: 319px;
+  fill: #1AB08E;
+  width: 18px;
+  height: 18px;
+}
+
+input, button, svg, img, p, b, h1, h2, h3, h4, h5, h6 {
+  user-select: none;
 }
 
 /* Transitions */

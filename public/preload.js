@@ -3,7 +3,10 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 
-const validChannels = ['WINDOW_STATE'];
+const validSendChannels = ['WINDOWS_STATE', 'OPEN_DIRECTORY_DIALOG', 'CREATE_WALLET'];
+const validOnChannels = ['DIRECTORY_SELECTED', 'WALLET_CREATED'];
+
+const validChannels = [...validSendChannels, ...validOnChannels];
 contextBridge.exposeInMainWorld(
     'ipc', {
         send: (channel, data) => {
