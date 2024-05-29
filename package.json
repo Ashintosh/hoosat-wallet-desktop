@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "main": "electron.js",
-  "type": "commonjs",
   "scripts": {
     "start": "vue-cli-service build && electron .",
     "serve": "vue-cli-service serve",

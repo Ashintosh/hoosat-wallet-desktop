@@ -1,15 +1,10 @@
 const { Wallet, initKaspaFramework } = require('@kaspa/wallet');
 const { RPC } = require('@kaspa/grpc-node');
-const path = require('path');
-//const zlib = require('zlib');
-const crypto = require('./Crypto');
-const filestream = require('./FileStream');
 
 class Worker {
     #DEFAULT_NETWORK = 'hoosattest';
     #DEFAULT_HOST    = '127.0.0.1';
     #DEFAULT_PORT    = '42422'; // 16111 testnet
-
 
 
     createWallet(mnemonic= null, { network = this.#DEFAULT_NETWORK, host = this.#DEFAULT_HOST, port = this.#DEFAULT_PORT } = {}) {
@@ -27,6 +22,12 @@ class Worker {
         if (!this.wallet) throw Error("Wallet not loaded into object.");
         const wallet = this.wallet;
         return wallet.addressManager.getAddresses(amount, type);
+    }
+
+    getBalance() {
+        if (!this.wallet) throw Error("Wallet not loaded into object.");
+        const wallet = this.wallet;
+        return wallet.balance;
     }
 
     getAddressData(type= 'receive') {
@@ -69,14 +70,15 @@ class Worker {
     buildTransaction(txData) {
         if (!this.wallet) throw Error("Wallet not loaded into object.");
         const wallet = this.wallet;
+
         return wallet.composeTx(txData);
     }
 
-    estimateTransaction(txData) {
+    estimateTransactionFee(txData) {
         if (!this.wallet) throw Error("Wallet not loaded into object.");
         const wallet = this.wallet;
 
-        const txComp = wallet.composeTx(txData);
+        const txComp = this.buildTransaction(txData);
         let {txSize, mass} = txComp.tx.getMassAndSize();
 
         const minReqFee = wallet.minimumRequiredTransactionRelayFee(mass);
@@ -93,8 +95,12 @@ class Worker {
         const test2Wallet = new Worker().createWallet();
         const taddress = test2Wallet.createAddress();
         await test2Wallet.refresh()
-        console.log(test2Wallet.wallet.balance);
+        console.log(test2Wallet.getBalance());
         const address= taddress[0].address;
+
+        console.log('============: ', address);
+
+        return;
 
         const testWallet = new Worker().createWallet('')
 
@@ -113,7 +119,7 @@ class Worker {
         }
 
         console.log('Fee:')
-        txData.fee = testWallet.estimateTransaction(txData).fee;
+        txData.fee = testWallet.estimateTransactionFee(txData).fee;
         console.log(txData.fee)
 
         console.log("trans:")
@@ -121,13 +127,15 @@ class Worker {
         console.log(tx)
 
 
+        return;
+
         console.log(testWallet.sendTransaction(tx))
 
         let stop = false;
 
         while (!stop) {
             await test2Wallet.refresh()
-            console.log(test2Wallet.wallet.balance);
+            console.log(test2Wallet.getBalance());
 
             if (test2Wallet.wallet.balance > 0) {
                 stop = true;

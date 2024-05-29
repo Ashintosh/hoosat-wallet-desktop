@@ -14,6 +14,23 @@ class Wallet {
 
     async create(seed= null) {
         this.wallet = this.worker.createWallet(seed);
+        return this;
+    }
+
+    async send(amount, address, priorityFee= null) {
+        const txData = {
+            toAddr: address,
+            amount: amount,
+            priorityFee: priorityFee
+        };
+
+        const estimatedFee = this.worker.estimateTransactionFee(txData);
+
+        delete txData.priorityFee;
+        txData.fee = estimatedFee;
+
+        const tx = this.worker.buildTransaction(txData);
+        return this.api.sendTransaction(tx);
     }
 
     async importFromFile(filepath, password= this.#DEFAULT_ENC_KEY) {
@@ -31,11 +48,9 @@ class Wallet {
 
         fileData = crypto.decryptBytes(fileData, password).toString('utf8');
         const walletData = JSON.parse(fileData);
-
         this.network =  walletData['network'];
-        this.wallet = this.create(walletData['mnemonic']);
 
-        return this;
+        return this.create(walletData['mnemonic']);
     }
 
     async saveToFile(filename, filepath, password= this.#DEFAULT_ENC_KEY) {
@@ -70,6 +85,25 @@ class Wallet {
     atomicToFloat(atomic) {
         return (atomic / 100000000).toFixed(8);
     }
+
+    async rTest() {
+        const wallet = new Wallet().create('fame leaf frequent piano mystery shrimp same ahead acoustic oyster crater salute');
+
+        const test2Wallet = new Worker().createWallet();
+        const taddress = test2Wallet.createAddress();
+        await test2Wallet.refresh()
+        const address = taddress[0].address;
+
+        const send = wallet.send(10000000000, address);
+
+        console.log(send);
+    }
 }
+
+
+(async () => {
+    const wallet = new Wallet();
+    await wallet.rTest();
+})();
 
 module.exports = Wallet;

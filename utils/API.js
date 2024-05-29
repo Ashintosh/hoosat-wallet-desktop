@@ -75,6 +75,11 @@ class API {
         return utxos;
     }
 
+    async sendTransaction(tx) {
+        const route = `${this.API_BASE}/transactions`;
+        return await this.call(route, tx);
+    }
+
     async call(route, params) {
         const options = {
             headers: { "Content-Type": "application/json" },
