@@ -55,6 +55,11 @@ class FileStream {
         });
     }
 
+    static exists(filePath) {
+        return fs.existsSync(filePath);
+
+    }
+
     static calculateChunkSize(fileSize) {
         return Math.min(16 * 1024, fileSize);
     }

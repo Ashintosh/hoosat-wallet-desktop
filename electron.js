@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 
 const url = require('url');
 const path = require('path');
+const Wallet = require("./utils/Wallet");
 
 let mainWindow;
 
@@ -79,4 +80,11 @@ ipcMain.on('CREATE_WALLET', async (event, data) => {
     let createdResult = await wallet.saveToFile(data.directory, data.password);
 
     event.reply('WALLET_CREATED', createdResult);
+});
+
+ipcMain.on('CHECK_DIR_EXISTS', async (event, data) => {
+    const Wallet = require('./utils/Wallet');
+
+    const existsResult = new Wallet().fileExists(data);
+    event.reply('DIR_EXISTS', existsResult);
 });

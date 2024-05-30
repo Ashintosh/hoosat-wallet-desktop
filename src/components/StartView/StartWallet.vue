@@ -62,7 +62,7 @@ export default {
 }
 
 .slide-leave-to {
-  transform: translateY(-80px);
+  transform: translateY(-95px);
 }
 
 </style>

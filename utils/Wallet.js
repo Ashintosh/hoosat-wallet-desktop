@@ -73,6 +73,10 @@ class Wallet {
         } catch (Err) {  return false; }
     }
 
+    fileExists(filePath) {
+        return filestream.exists(filePath);
+    }
+
     async prepareWalletData(wallet, password) {
         wallet.createAddress(5, 'receive');
         wallet.createAddress(2, 'change');

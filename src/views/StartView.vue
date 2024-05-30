@@ -6,18 +6,24 @@
 </template>
 
 <script>
-// Import components here
+// StartView imports
 import StartWallet from '@/components/StartView/StartWallet.vue'
 import CreateWallet from '@/components/StartView/CreateWallet.vue'
 import RestoreWallet from '@/components/StartView/RestoreWallet.vue'
 
+// WalletView imports
+import WalletMain from '@/components/WalletView/WalletMain.vue'
+
 export default {
   name: 'StartView',
   components: {
-    // Register components here
+    // StartView
     StartWallet,
     CreateWallet,
-    RestoreWallet
+    RestoreWallet,
+
+    // WalletView
+    WalletMain
   },
   data() {
     return {
@@ -100,14 +106,14 @@ button:active {
   width: 100%;
   outline: none;
   background: #6E8582;
-  color: #1cc59e;
-  border: 1px solid #1AB08E;
+  color: #1ecda5;
+  border: 1px solid #1ecda5;
   border-radius: 5px;
   transition: .3s ease;
 }
 .primary-input:focus {
   background: #B9DFDA;
-  border: 1px solid #22E4B8;
+  border: 1px solid #149578;
   border-radius: 10px;
   color: #149578;
 }
@@ -124,14 +130,7 @@ button:active {
   transition: .3s ease;
 }
 
-.svg_icon {
-  position: absolute;
-  bottom: 159px;
-  right: 319px;
-  fill: #1AB08E;
-  width: 18px;
-  height: 18px;
-}
+
 
 input, button, svg, img, p, b, h1, h2, h3, h4, h5, h6 {
   user-select: none;
