@@ -38,5 +38,10 @@
     "electron": "^30.0.2",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3"
+  },
+  "overrides": {
+    "@grpc/grpc-js": ">=1.10.9",
+    "braces": ">=3.0.3",
+    "postcss": ">=8.4.31"
   }
 }
