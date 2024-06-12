@@ -10,28 +10,20 @@ class Worker {
             : new Wallet(null, null, { network });
 
         this.network = network;
-
-        return this;
     }
 
     async createAddress(amount= 1, type= 'receive') {
-        if (!this.wallet) throw Error("Wallet not loaded into object.");
-        const wallet = this.wallet;
+        this.checkWalletLoaded(true);
         await initKaspaFramework();
-        return wallet.addressManager.getAddresses(amount, type);
-    }
 
-    getBalance() {
-        if (!this.wallet) throw Error("Wallet not loaded into object.");
-        const wallet = this.wallet;
-        return wallet.balance;
+        return this.wallet.addressManager.getAddresses(amount, type);
     }
 
     async getAddressData(type= 'receive') {
-        if (!this.wallet) throw Error("Wallet not loaded into object.");
-        const wallet = this.wallet;
+        this.checkWalletLoaded(true);
         await initKaspaFramework();
 
+        const wallet = this.wallet;
         const addressData = (type === 'receive') ? wallet.addressManager.receiveAddress.keypairs
             : wallet.addressManager.changeAddress.keypairs;
 
@@ -50,44 +42,40 @@ class Worker {
     }
 
     async sendTransaction(tx) {
-        if (!this.wallet) throw Error("Wallet not loaded into object.");
-        const wallet = this.wallet;
-
+        this.checkWalletLoaded(true);
         await initKaspaFramework();
-        await wallet.submitTransaction(tx);
+
+        await this.wallet.submitTransaction(tx);
     }
 
     async refresh() {
-        if (!this.wallet) throw Error("Wallet not loaded into object.");
-        const wallet = this.wallet;
-
+        this.checkWalletLoaded(true);
         await initKaspaFramework();
-        await wallet.sync()
+
+        await this.wallet.sync()
             .catch((Err) => {
                 console.error("Refresh Error:", Err);
                 return false;
             });
+
         return true;
     }
 
     async buildTransaction(txData) {
-        if (!this.wallet) throw Error("Wallet not loaded into object.");
-        const wallet = this.wallet;
-
+        this.checkWalletLoaded(true);
         await initKaspaFramework();
-        return wallet.composeTx(txData);
+
+        return this.wallet.composeTx(txData);
     }
 
     async estimateTransactionFee(txData) {
-        if (!this.wallet) throw Error("Wallet not loaded into object.");
-        const wallet = this.wallet;
-
+        this.checkWalletLoaded(true);
         await initKaspaFramework();
 
         const txComp = this.buildTransaction(txData);
         let { txSize, mass } = txComp.tx.getMassAndSize();
 
-        const minReqFee = wallet.minimumRequiredTransactionRelayFee(mass);
+        const minReqFee = this.wallet.minimumRequiredTransactionRelayFee(mass);
         const txFee = (txData.priorityFee) ? txData.priorityFee + minReqFee
             : minReqFee;
 
@@ -95,6 +83,38 @@ class Worker {
             fee: txFee,
             size: txSize
         };
+    }
+
+    getWallet() {
+        this.checkWalletLoaded(true);
+        return this.wallet;
+    }
+
+    getNetwork() {
+        this.checkWalletLoaded(true);
+        return this.wallet.network;
+    }
+
+    getMnemonic() {
+        this.checkWalletLoaded(true);
+        return this.wallet.mnemonic;
+    }
+
+    getBalance() {
+        this.checkWalletLoaded(true);
+        return this.wallet.balance;
+    }
+
+    checkWalletLoaded(throwError= false) {
+        if (this.wallet) {
+            return true;
+        }
+
+        if (throwError) {
+            throw Error("Wallet not loaded into object.");
+        }
+
+        return false;
     }
 }
 

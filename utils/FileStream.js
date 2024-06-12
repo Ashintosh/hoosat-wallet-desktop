@@ -55,6 +55,13 @@ class FileStream {
         });
     }
 
+    static addExtension(filePath, extension) {
+        if (path.extname(filePath) !== extension) {
+            return filePath + extension;
+        }
+        return filePath;
+    }
+
     static exists(filePath) {
         return fs.existsSync(filePath);
 

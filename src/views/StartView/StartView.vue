@@ -1,18 +1,11 @@
-<template>
-  <div>
-    <!-- Display the currently active component -->
-    <component @childSwitch="switchComponent" :is="currentComponent"/>
-  </div>
-</template>
-
 <script>
 // StartView imports
-import StartWallet from '@/components/StartView/StartWallet.vue'
-import CreateWallet from '@/components/StartView/CreateWallet.vue'
-import RestoreWallet from '@/components/StartView/RestoreWallet.vue'
+import StartWallet from '@/views/StartView/StartWallet.vue'
+import CreateWallet from '@/views/StartView/CreateWallet.vue'
+import RestoreWallet from '@/views/StartView/RestoreWallet.vue'
 
 // WalletView imports
-import WalletMain from '@/components/WalletView/WalletMain.vue'
+import WalletMain from '@/views/WalletView/WalletMain.vue'
 
 export default {
   name: 'StartView',
@@ -42,6 +35,12 @@ export default {
 }
 </script>
 
+<template>
+  <div>
+    <!-- Display the currently active component -->
+    <component @childSwitch="switchComponent" :is="currentComponent"/>
+  </div>
+</template>
 
 <style>
 .content {

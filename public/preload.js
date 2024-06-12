@@ -3,8 +3,13 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 
-const validSendChannels = ['WINDOWS_STATE', 'OPEN_DIRECTORY_DIALOG', 'CREATE_WALLET', 'CHECK_DIR_EXISTS'];
-const validOnChannels = ['DIRECTORY_SELECTED', 'WALLET_CREATED', 'DIR_EXISTS'];
+const validSendChannels = [
+    'OPEN_DIRECTORY_DIALOG', 'OPEN_FILE_DIALOG', 'CREATE_WALLET', 'VALIDATE_SEED'
+];
+
+const validOnChannels = [
+    'DIRECTORY_SELECTED', 'FILE_SELECTED', 'WALLET_CREATED', 'SEED_VALIDATED'
+];
 
 const validChannels = [...validSendChannels, ...validOnChannels];
 contextBridge.exposeInMainWorld(
