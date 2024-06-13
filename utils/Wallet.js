@@ -4,7 +4,7 @@ const filestream = require("./FileStream");
 const crypto = require("./Crypto");
 
 class Wallet {
-    #DEFAULT_ENC_KEY = 'hoosat-wallet_dz#&--U}[=.y;2k';
+    #DEFAULT_ENC_KEY = 'hoosat-wallet_dz#&*-U}[=.y;2k';
 
     constructor() {
         this.api = new API();
@@ -61,7 +61,6 @@ class Wallet {
     }
 
     async importFromFile(filePath, password= this.#DEFAULT_ENC_KEY) {
-        const absolutePath = filestream.addExtension(filePath, '.hoosat');
         const fileValidation = this.validateFileParams(filePath, password);
         if (fileValidation) {
             return {
@@ -70,14 +69,14 @@ class Wallet {
             };
         }
 
-        if (!filestream.exists(absolutePath)) {
+        if (!filestream.exists(filePath)) {
             return {
                 status: false,
                 error: 'file-not-found'
             };
         }
 
-        let fileData = await filestream.readFileBytes(absolutePath)
+        let fileData = await filestream.readFileBytes(filePath)
             .catch(() => {
                 return {
                     status: false,
@@ -96,7 +95,6 @@ class Wallet {
         try {
             fileData = crypto.decryptBytes(fileData, password).toString('utf8');
             walletData = JSON.parse(fileData);
-            // await this.worker.createWallet(walletData.mnemonic);
         } catch (_) {
             return {
                 status: false,
@@ -181,6 +179,10 @@ class Wallet {
 
         if (filePath.endsWith('/')) {
             return 'no-file-name';
+        }
+
+        if (filestream.checkExtension(filePath, '.hoosat')) {
+            return 'not-valid-wallet';
         }
 
         if (password.length < 8) {

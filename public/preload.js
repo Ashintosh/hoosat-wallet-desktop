@@ -4,11 +4,13 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 const validSendChannels = [
-    'OPEN_DIRECTORY_DIALOG', 'OPEN_FILE_DIALOG', 'CREATE_WALLET', 'VALIDATE_SEED'
+    'GET_SPECIAL_PATH', 'WRITE_FILE', 'READ_FILE', 'OPEN_DIRECTORY_DIALOG', 'OPEN_FILE_DIALOG', 'CREATE_WALLET', 'VALIDATE_SEED',
+    'GOTO_ROUTE'
 ];
 
 const validOnChannels = [
-    'DIRECTORY_SELECTED', 'FILE_SELECTED', 'WALLET_CREATED', 'SEED_VALIDATED'
+    'SPECIAL_PATH_RESULT', 'FILE_WRITTEN', 'FILE_READ_DATA', 'DIRECTORY_SELECTED', 'FILE_SELECTED', 'WALLET_CREATED', 'SEED_VALIDATED',
+    'CHANGE_ROUTE'
 ];
 
 const validChannels = [...validSendChannels, ...validOnChannels];

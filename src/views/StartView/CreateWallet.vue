@@ -1,20 +1,29 @@
 <script setup>
 import { ref, defineComponent, defineOptions, defineEmits, onMounted } from "vue";
 
+import BackButtonBlock from "@/components/BackButtonBlock.vue";
 import PrimaryButton from "@/components/PrimaryButton.vue";
 import PrimaryInput from "@/components/PrimaryInput.vue";
+import FileInput from "@/components/FileInput.vue";
 import LogoBlock from "@/components/LogoBlock.vue";
-import BackButtonBlock from "@/components/BackButtonBlock.vue";
+import LoadingBlock from "@/components/LoadingBlock.vue";
+
+import { saveConfig } from "@/utils/Config";
+import { changeRoute } from "@/utils/Helpers";
+import { validateFileData } from "@/utils/WalletFile";
 
 defineOptions({ name: 'CreateWallet' });
-defineComponent([ BackButtonBlock, LogoBlock, PrimaryButton, PrimaryInput ]);
-const emit = defineEmits([ 'childSwitch' ]);
+defineComponent([ BackButtonBlock, LogoBlock, PrimaryButton, PrimaryInput, FileInput, LoadingBlock ]);
+const emit = defineEmits([ 'childSwitch', 'gotoWalletView' ]);
 
+const selected = ref('');
+const password = ref('');
+const errorMsg = ref('');
+
+const showLogo     = ref(true);
 const showPage     = ref(false);
-const selected     = ref('');
-const password     = ref('');
+const isLoading    = ref(false);
 const showErrorMsg = ref(false);
-const errorMsg     = ref('');
 
 onMounted(() => {
   showPage.value = true;
@@ -24,8 +33,13 @@ onMounted(() => {
 function switchComponent(component) {
   showPage.value = false;
   setTimeout(() => {
-    emit('childSwitch', component);
-  }, 1000);
+    emit('childSwitch', component, true);
+  }, 500);
+}
+
+function togglePage() {
+  // showLogo.value = !showLogo.value;
+  showPage.value = !showPage.value;
 }
 
 function showError(msg) {
@@ -38,20 +52,22 @@ function hideError() {
   errorMsg.value     = '';
 }
 
-async function browseDialog(type='file') {
-  hideError();
-
-  selected.value = await new Promise((resolve) => {
-    window.ipc.send(`OPEN_${type.toUpperCase()}_DIALOG`);
-    window.ipc.once(`${type.toUpperCase()}_SELECTED`, (selected) => {
-      if (type === 'file') resolve(selected);
-      else if (type === 'directory') resolve(selected + '/wallet.hoosat');
-    });
-  });
+function handleChildUpdate(type, param) {
+  switch (type) {
+    case 'selected': selected.value = param; break;
+    case 'password': password.value = param; break;
+    default: break;
+  }
 }
 
 async function createWallet() {
   hideError();
+
+  // [LOADING]
+  togglePage();
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  isLoading.value = true;
 
   const payload = {
     action: 'create',
@@ -61,6 +77,10 @@ async function createWallet() {
 
   const isValidWallet = await validateFileData(payload);
   if (!isValidWallet.status) {
+    isLoading.value = false;
+    await new Promise(resolve => setTimeout(resolve, 300));
+    togglePage();
+
     switch (isValidWallet.error) {
       case 'no-directory-value': showError('Wallet directory must have a value');     return;
       case 'file-exists'       : showError('This file already exists');               return;
@@ -70,35 +90,42 @@ async function createWallet() {
       default: showError('Unknown exception'); return;
     }
   }
-}
 
-function validateFileData(payload) {
-  return new Promise((resolve) => {
-    window.ipc.send('CREATE_WALLET', payload);
-    window.ipc.once('WALLET_CREATED', (isValid) => {
-      resolve(JSON.parse(isValid));
-    });
-  });
+  // If created successfully
+
+  if (!await saveConfig(selected.value)) {
+    console.log('App configuration file could not be saved.');
+  }
+
+  isLoading.value = false;
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  changeRoute('/wallet', isValidWallet);
 }
 </script>
 
 <template>
   <div class="content">
     <transition name="fade">
-      <BackButtonBlock v-if="showPage" @click="switchComponent('StartWallet')" />
+      <LogoBlock v-if="showLogo" />
     </transition>
-    <transition name="slide"> <LogoBlock v-if="showPage"/> </transition>
+    <transition name="fade-3">
+      <LoadingBlock v-if="isLoading" />
+    </transition>
     <transition name="fade">
-      <div class="fields" v-if="showPage">
+      <BackButtonBlock v-if="showPage && !isLoading" @click="switchComponent('StartWallet')" />
+    </transition>
+    <transition name="fade">
+      <div class="fields" v-if="showPage && !isLoading">
         <h3>Choose Wallet Directory</h3>
-        <div class="fields-row">
-          <PrimaryInput class="primary-input" type="text" v-model="selected" />
-          <PrimaryButton class="browse-btn" value="Browse" @click="browseDialog('directory')" />
-        </div>
-        <div class="fields-column">
-          <p>Password</p>
-          <PrimaryInput class="primary-input" action="visibleToggle" ref="passwordInput" v-model="password" />
-        </div>
+        <FileInput
+            type="protected"
+            dialog="directory"
+            :selected="selected"
+            :password="password"
+            @hideError="hideError"
+            @childUpdate="handleChildUpdate"
+        />
         <div class="message">
           <span :class="{ 'show': showErrorMsg }">{{ errorMsg }}</span>
         </div>
@@ -117,17 +144,7 @@ function validateFileData(payload) {
   align-items: center;
   margin-top: 120px;
 }
-.fields-row {
-  display: flex;
-  flex-direction: row;
-  margin-top: 35px;
-}
-.fields-column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 15px;
-}
+
 .fields-buttons-row {
   display: flex;
   flex-direction: row;
@@ -151,13 +168,5 @@ span {
 }
 span.show {
   opacity: 1;
-}
-
-/* Logo Slide Transition */
-.slide-leave-active {
-  transition: transform 1s ease;
-}
-.slide-leave-to {
-  transform: translateY(95px);
 }
 </style>

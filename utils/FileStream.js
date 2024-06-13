@@ -62,6 +62,10 @@ class FileStream {
         return filePath;
     }
 
+    static checkExtension(filePath, extension) {
+        return (path.extname(filePath) !== extension);
+    }
+
     static exists(filePath) {
         return fs.existsSync(filePath);
 

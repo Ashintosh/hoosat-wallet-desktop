@@ -19,7 +19,6 @@
     "@kaspa/wallet": "file:libs/htn-wallet/dist",
     "axios": "^1.7.2",
     "core-js": "^3.8.3",
-    "flatted": "^3.3.1",
     "fs": "^0.0.1-security",
     "path": "^0.12.7",
     "typescript": "^5.4.5",

@@ -1,4 +1,4 @@
-const { ipcMain } = require('electron');
+const { app, ipcMain } = require('electron');
 
 // IPC backend requests
 // WINDOW_STATE might get used in the future if I ever decide to have a custom title bar
@@ -10,6 +10,11 @@ ipcMain.on('WINDOW_STATE', (event, payload) => {
         case 'maximized': remote.BrowserWindow.getFocusedWindow().maximize(); break;
         case 'closed'   : remote.BrowserWindow.getFocusedWindow().close();    break;
     }
+});
+
+ipcMain.on('GET_SPECIAL_PATH', (event, payload) => {
+    const specialPath = app.getPath(payload);
+    event.reply('SPECIAL_PATH_RESULT', specialPath);
 });
 
 ipcMain.on('OPEN_DIRECTORY_DIALOG', (event) => {
@@ -36,6 +41,30 @@ ipcMain.on('OPEN_FILE_DIALOG', (event) => {
         .catch(err => {
             console.log(err);
         });
+});
+
+ipcMain.on('WRITE_FILE', async (event, payload) => {
+    const filestream = require('./utils/FileStream');
+
+    try { await filestream.writeFileBytes(payload.path, JSON.stringify(payload.data, null, 2)); }
+    catch (err) { event.reply('FILE_WRITTEN', false); }
+
+    event.reply('FILE_WRITTEN', true);
+});
+
+ipcMain.on('READ_FILE', async (event, payload) => {
+    const filestream = require('./utils/FileStream');
+
+    try {
+        const fileData = await filestream.readFileBytes(payload);
+
+        if (!fileData.toString()) {
+            event.reply('FILE_READ_DATA', false);
+        }
+
+        event.reply('FILE_READ_DATA', fileData.toString());
+    }
+    catch (err) { event.reply('FILE_READ_DATA', false); }
 });
 
 ipcMain.on('CREATE_WALLET', async (event, payload) => {
@@ -99,4 +128,11 @@ ipcMain.on('VALIDATE_SEED', async (event, payload) => {
         status: true,
         seed: payload
     }));
+});
+
+
+// Rout Switches
+
+ipcMain.on('GOTO_ROUTE', (event, payload) => {
+    event.reply('CHANGE_ROUTE', JSON.stringify(payload));
 });

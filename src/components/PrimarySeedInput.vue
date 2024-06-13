@@ -1,13 +1,14 @@
 <script setup>
-import { ref, defineEmits, watchEffect } from 'vue';
+import { ref, watchEffect, defineProps, defineEmits } from 'vue';
 
-const emit = defineEmits(['restoreSeedUpdated']);
-const words = ref(Array(12).fill(''));
+const props = defineProps([ 'seed' ])
+const emit = defineEmits([ 'childUpdate' ]);
+const seed = ref(props.seed.split(' '));
 
 watchEffect(() => {
-  const seedPhrase = words.value.join(' ');
+  const seedPhrase = seed.value.join(' ');
   if (seedPhrase.trim() !== '') {
-    emit('restoreSeedUpdated', seedPhrase.trim());
+    emit('childUpdate', 'seed', seedPhrase.trim());
   }
 });
 
@@ -22,7 +23,7 @@ const handleKeyDown = (index, event) => {
       }
     }
   } else if (event.key === 'Backspace') {  // Backspace
-    if (index > 0 && !words.value[index]) {
+    if (index > 0 && !seed.value[index]) {
       event.preventDefault(); // Prevent default only when input is empty
       const lastIndex = index - 1;
       const lastInput = document.querySelector(`.word-input:nth-child(${lastIndex + 1}) input`);
@@ -40,7 +41,7 @@ const handlePaste = (event) => {
 
   const wordArray = pastedText.split(/\s+/);
   for (let i = 0; i < Math.min(wordArray.length, 12); i++) {
-    words.value[i] = wordArray[i];
+    seed.value[i] = wordArray[i];
   }
 };
 </script>
@@ -52,7 +53,7 @@ const handlePaste = (event) => {
       <input
           type="text"
           class="primary-input"
-          v-model="words[index]"
+          v-model="seed[index]"
           @paste.prevent="handlePaste($event)"
           @keydown="handleKeyDown(index, $event)"
       />

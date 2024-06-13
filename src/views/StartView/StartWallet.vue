@@ -1,16 +1,19 @@
 <script setup>
-import { ref, defineComponent, defineOptions, defineEmits, onMounted } from "vue";
+import { ref, defineProps, defineComponent, defineOptions, defineEmits, onMounted } from "vue";
 
 import PrimaryButton from '@/components/PrimaryButton.vue';
 import LogoBlock from "@/components/LogoBlock.vue";
 
 defineOptions({ name: 'StartWallet' });
 defineComponent([ PrimaryButton, LogoBlock ]);
+const props = defineProps([ 'showLogo' ]);
 const emit = defineEmits([ 'childSwitch' ]);
 
+const showLogo = ref(props.showLogo);
 const showPage = ref(false);
 
 onMounted(() => {
+  showLogo.value = true;
   showPage.value = true;
 });
 
@@ -25,7 +28,9 @@ function switchComponent(component) {
 
 <template>
   <div class="content">
-    <transition name="slide"> <LogoBlock v-if="showPage"/> </transition>
+    <transition name="fade">
+      <LogoBlock v-if="showLogo" />
+    </transition>
     <transition name="fade">
       <div class="fields" v-if="showPage">
         <PrimaryButton class="primary-btn" value="Create Wallet" @click="switchComponent('CreateWallet')"/>
@@ -36,16 +41,6 @@ function switchComponent(component) {
 </template>
 
 <style scoped>
-.logo {
-  position: absolute;
-  top: 130px;
-  left: 381px;
-}
-.logo img {
-  max-width: 140px;
-  max-height: 140px;
-  -webkit-user-drag: none;
-}
 
 .fields {
   display: flex;
@@ -55,13 +50,4 @@ function switchComponent(component) {
   margin-top: 50px;
   gap: 20px;
 }
-
-.slide-leave-active {
-  transition: transform 0.5s ease;
-}
-
-.slide-leave-to {
-  transform: translateY(-95px);
-}
-
 </style>

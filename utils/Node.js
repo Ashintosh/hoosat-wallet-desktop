@@ -5,8 +5,6 @@ const { Client } = require('@kaspa/grpc');
 
 class Node {
 
-    API_BASE = 'https://api.network.hoosat.fi';
-
     constructor(host= '127.0.0.1', port= '42422', network= 'hoosat') {
         this.host    = host;
         this.port    = port;
